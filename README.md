@@ -57,16 +57,36 @@ streamlit run streamlit_app.py
 
 **Важно:** сначала `pip install -e .`, чтобы импорт `ai_fashion_trends` из `streamlit_app.py` работал.
 
-### CLI (каркас)
+### CLI
+
+Справка по подкомандам:
 
 ```bash
-python -m ai_fashion_trends
+python -m ai_fashion_trends --help
 ```
 
-### Пайплайн на мок-данных
+**Сбор и обработка (удалённая ветка):**
 
 ```bash
-python -m ai_fashion_trends run-pipeline
+./run.sh ingest
+./run.sh process
+# или: uv run ai-fashion-trends ingest
+```
+
+**Прогноз по уже извлечённым трендам** (`data/processed/trends.jsonl` после `process`):
+
+```bash
+python -m ai_fashion_trends forecast
+# свой файл: python -m ai_fashion_trends forecast -i path/to/trends.jsonl
+# мало недель в ряду: python -m ai_fashion_trends forecast --holdout-weeks 2
+```
+
+Артефакты: `data/features/trend_timeseries/features_from_processed.csv`, `data/predictions/predictions_from_processed.csv`, `data/predictions/metrics_from_processed.csv`.
+
+### Пайплайн на мок-данных (без ingest)
+
+```bash
+python -m ai_fashion_trends mock-pipeline
 ```
 
 Команда сгенерирует синтетический датасет и прогонит весь flow:

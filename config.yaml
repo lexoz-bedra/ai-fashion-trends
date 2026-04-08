@@ -1,0 +1,120 @@
+data_dir: data/raw
+checkpoint_dir: data/checkpoints
+
+google_trends:
+  enabled: false
+  keywords:
+    - fashion trends 2026
+    - streetwear
+    - sustainable fashion
+    - Y2K fashion
+    - quiet luxury
+    - gorpcore
+    - coquette aesthetic
+    - mob wife aesthetic
+    - vintage clothing
+    - techwear
+    - balletcore
+    - oversized fits
+    - minimalist style
+    - sneakerhead
+    - upcycled fashion
+    - dopamine dressing
+  geo: ""                    
+  timeframe: "today 12-m"
+  batch_size: 5
+
+rss:
+  enabled: true
+  batch_size: 50
+  feeds:
+    - https://www.vogue.com/feed/rss
+    - https://www.businessoffashion.com/feed
+    - https://fashionista.com/feed
+    - https://www.highsnobiety.com/feed/
+    - https://hypebeast.com/feed
+    - https://wwd.com/feed/
+    - https://www.whowhatwear.com/feed
+    - https://www.gq.com/feed/rss
+    - https://www.glamour.com/feed/rss
+    - https://www.nylon.com/feed
+    - https://www.harpersbazaar.com/feed/
+    - https://www.elle.com/feed/
+    - https://www.cosmopolitan.com/feed/
+    - https://hypebae.com/feed
+    - https://www.dazeddigital.com/rss
+    - https://www.thecut.com/feed.xml
+    - https://wwd.com/fashion-news/feed/
+    - https://www.fashionbeans.com/feed/
+    - https://www.allure.com/feed/rss
+    - https://fashionunited.com/feed
+    - https://www.vanityfair.com/feed/rss
+
+web_scraper:
+  enabled: true
+  batch_size: 20
+  sites:
+    - name: reddit_fashion
+      start_urls:
+        - https://old.reddit.com/r/streetwear/top/?t=year
+        - https://old.reddit.com/r/streetwear/top/?t=all
+        - https://old.reddit.com/r/streetwear/hot/
+        - https://old.reddit.com/r/streetwear/new/
+        
+        - https://old.reddit.com/r/femalefashionadvice/top/?t=year
+        - https://old.reddit.com/r/femalefashionadvice/top/?t=all
+        - https://old.reddit.com/r/femalefashionadvice/hot/
+        
+        - https://old.reddit.com/r/malefashionadvice/top/?t=year
+        - https://old.reddit.com/r/malefashionadvice/top/?t=all
+        - https://old.reddit.com/r/malefashionadvice/hot/
+        
+        - https://old.reddit.com/r/Sneakers/top/?t=year
+        - https://old.reddit.com/r/Sneakers/top/?t=all
+        - https://old.reddit.com/r/Sneakers/hot/
+        
+        - https://old.reddit.com/r/SustainableFashion/top/?t=year
+        - https://old.reddit.com/r/SustainableFashion/new/
+        
+        - https://old.reddit.com/r/ThriftStoreHauls/top/?t=year
+        - https://old.reddit.com/r/ThriftStoreHauls/top/?t=all
+        
+        - https://old.reddit.com/r/OUTFITS/top/?t=year
+        - https://old.reddit.com/r/OUTFITS/hot/
+        
+        - https://old.reddit.com/r/womensstreetwear/top/?t=year
+        - https://old.reddit.com/r/womensstreetwear/top/?t=all
+        
+        - https://old.reddit.com/r/japanesestreetwear/top/?t=year
+        - https://old.reddit.com/r/rawdenim/top/?t=year
+        - https://old.reddit.com/r/streetwearstartup/top/?t=year
+        - https://old.reddit.com/r/streetwearstartup/new/
+        - https://old.reddit.com/r/TechWear/top/?t=year
+        - https://old.reddit.com/r/VintageFashion/top/?t=year
+        - https://old.reddit.com/r/OUTFITS/new/
+        - https://old.reddit.com/r/ThriftStoreHauls/new/
+        - https://old.reddit.com/r/frugalmalefashion/top/?t=year
+        - https://old.reddit.com/r/frugalmalefashion/hot/
+        - https://old.reddit.com/r/goodyearwelt/top/?t=year
+        - https://old.reddit.com/r/Watches/top/?t=year
+        - https://old.reddit.com/r/handbags/top/?t=year
+      item_selector: "div.thing"
+      title_selector: "a.title"
+      text_selector: "a.title"
+      link_selector: "a.title"
+      date_selector: "time"
+      date_attr: "datetime"
+      next_page_selector: "span.next-button a"
+      max_pages: 30
+      request_delay: 2.0
+      source_type: forum
+
+llm:
+  default_model: gemma
+  models:
+    gemma:
+      api_base: "http://localhost:11434/v1"
+      model_id: "gemma3:12b"
+      api_key: "ollama"
+      max_tokens: 1024
+      temperature: 0.3

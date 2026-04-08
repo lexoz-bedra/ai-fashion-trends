@@ -29,7 +29,17 @@ def _rolling_mean_baseline(train_y: list[float], predict_steps: int, window: int
     return [value] * predict_steps
 
 
-def train_and_predict(features_path: Path, predictions_path: Path, holdout_weeks: int = 6) -> Path:
+def _effective_holdout(n: int, requested: int) -> int | None:
+    """Need at least 2 train points and 1 test week: n >= h + 2, h >= 1."""
+    if n < 3:
+        return None
+    h = min(max(requested, 1), n - 2)
+    return h
+
+
+def train_and_predict(
+    features_path: Path, predictions_path: Path, holdout_weeks: int = 6
+) -> Path:
     """Train baseline + regression per trend and write holdout predictions."""
     predictions_path.parent.mkdir(parents=True, exist_ok=True)
     grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
@@ -43,9 +53,10 @@ def train_and_predict(features_path: Path, predictions_path: Path, holdout_weeks
         rows.sort(key=lambda x: x["week_start"])
         y = [float(r["count"]) for r in rows]
         w = [r["week_start"] for r in rows]
-        if len(y) <= holdout_weeks + 2:
+        h = _effective_holdout(len(y), holdout_weeks)
+        if h is None:
             continue
-        split = len(y) - holdout_weeks
+        split = len(y) - h
         y_train, y_test = y[:split], y[split:]
         test_weeks = w[split:]
 
