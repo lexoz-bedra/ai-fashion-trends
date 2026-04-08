@@ -1,0 +1,6 @@
+trend_tag,mae_baseline,rmse_baseline,mape_baseline,mae_regression,rmse_regression,mape_regression
+berry_lips,5.0833,5.7427,40.1153,3.7128,4.4558,28.4849
+cherry_blush,2.0,2.63,36.026,3.0107,3.8604,53.4584
+clean_girl,1.6667,2.9439,64.5833,3.4571,4.2813,98.7744
+glass_skin,2.3333,3.0,39.2136,2.8188,3.0197,35.8623
+graphic_liner,2.5,3.4611,42.7151,2.5129,3.6718,45.0005

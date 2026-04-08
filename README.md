@@ -63,6 +63,20 @@ streamlit run streamlit_app.py
 python -m ai_fashion_trends
 ```
 
+### Пайплайн на мок-данных
+
+```bash
+python -m ai_fashion_trends run-pipeline
+```
+
+Команда сгенерирует синтетический датасет и прогонит весь flow:
+
+- `data/raw/news/mock_raw.csv`
+- `data/processed/news_cleaned/cleaned.csv`
+- `data/features/trend_timeseries/features.csv`
+- `data/predictions/predictions.csv`
+- `data/predictions/metrics.csv`
+
 ## Имплементация подхода из статьи
 
 Опираемся на статью **“Discovering fashion industry trends in the online news by applying text mining and time series regression analysis”** (Heliyon, 2023).
