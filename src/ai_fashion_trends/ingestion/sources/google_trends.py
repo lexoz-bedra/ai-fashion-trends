@@ -1,12 +1,3 @@
-"""Источник: Google Trends.
-
-Использует pytrends для получения:
-- trending searches (daily/realtime)
-- interest over time по ключевым словам
-
-Конфиг передаётся при инициализации — список ключевых слов (keywords)
-и регион (geo).
-"""
 
 from __future__ import annotations
 
@@ -24,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class GoogleTrendsSource(BaseSource):
-    """Сбор данных из Google Trends через pytrends."""
 
     def __init__(
         self,
@@ -51,12 +41,11 @@ class GoogleTrendsSource(BaseSource):
 
     def _get_client(self) -> Any:
         if self._pytrends is None:
-            from pytrends.request import TrendReq 
+            from pytrends.request import TrendReq
             self._pytrends = TrendReq(hl="en-US", tz=360)
         return self._pytrends
 
     def fetch_batch(self) -> Iterator[list[PostRecord]]:
-        """Получаем interest_over_time + related_queries батчами по batch_size ключевых слов."""
         import time
 
         processed = self.checkpoint.processed_ids
@@ -70,8 +59,8 @@ class GoogleTrendsSource(BaseSource):
                 continue
 
             records: list[PostRecord] = []
-            
-            max_retries = 3 # 429 error
+
+            max_retries = 3
             for attempt in range(max_retries):
                 try:
                     logger.info("Fetching interest over time for %s (attempt %d)", kw_batch, attempt + 1)
@@ -79,15 +68,15 @@ class GoogleTrendsSource(BaseSource):
                     iot = pt.interest_over_time()
                     if not iot.empty:
                         records.extend(self._parse_interest_over_time(iot, kw_batch))
-                    
+
                     time.sleep(2)
 
                     logger.info("Fetching related queries for %s (attempt %d)", kw_batch, attempt + 1)
                     related = pt.related_queries()
                     records.extend(self._parse_related_queries(related, kw_batch))
-                    
+
                     break
-                    
+
                 except Exception as e:
                     import pytrends.exceptions
                     if isinstance(e, pytrends.exceptions.TooManyRequestsError) or "429" in str(e):
@@ -106,7 +95,7 @@ class GoogleTrendsSource(BaseSource):
                     new_ids=[batch_key],
                     extra={"last_keywords_batch": kw_batch},
                 )
-            
+
             time.sleep(5)
 
     def _parse_interest_over_time(self, df: Any, keywords: list[str]) -> list[PostRecord]:

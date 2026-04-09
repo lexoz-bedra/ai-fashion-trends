@@ -23,7 +23,6 @@ _MODEL_REGISTRY: dict[str, dict[str, Any]] = {
 
 
 def register_model(name: str, config: dict[str, Any]) -> None:
-    """Зарегистрировать новую модель в реестре."""
     _MODEL_REGISTRY[name] = config
 
 
@@ -34,18 +33,6 @@ def call_model(
     cache_dir: Path | None = None,
     **kwargs: Any,
 ) -> str:
-    """Вызвать модель и вернуть текстовый ответ.
-
-    Args:
-        prompt: Текст запроса.
-        model_name: Имя модели из реестра.
-        use_cache: Использовать дисковый кэш.
-        cache_dir: Директория кэша (по умолчанию data/llm_cache/).
-        **kwargs: Дополнительные параметры (temperature, max_tokens и т.д.).
-
-    Returns:
-        Текст ответа модели.
-    """
     if model_name not in _MODEL_REGISTRY:
         raise ValueError(f"Model '{model_name}' not in registry. Available: {list(_MODEL_REGISTRY.keys())}")
 
@@ -92,7 +79,6 @@ def _call_openai_compatible(prompt: str, config: dict[str, Any]) -> str:
 
 
 class _LlmCache:
-    """Простой JSONL-кэш: prompt_hash → response."""
 
     def __init__(self, cache_dir: Path) -> None:
         self._dir = cache_dir

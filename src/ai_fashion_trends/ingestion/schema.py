@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 
 class Engagement(BaseModel):
-    """Метрики вовлечённости (все поля опциональны — разные источники дают разное)."""
 
     likes: int | None = None
     comments: int | None = None
@@ -18,9 +17,8 @@ class Engagement(BaseModel):
 
 
 class MediaMeta(BaseModel):
-    """Метаданные медиа-контента."""
 
-    type: str | None = None  # image, video, carousel
+    type: str | None = None
     url: str | None = None
     width: int | None = None
     height: int | None = None
@@ -28,10 +26,6 @@ class MediaMeta(BaseModel):
 
 
 class PostRecord(BaseModel):
-    """Единая запись — контракт для всех ingestion-модулей.
-
-    Все источники ОБЯЗАНЫ нормализовать свои данные в эту модель.
-    """
 
     source: str = Field(..., description="Название источника: pinterest, tiktok, google_trends и т.д.")
     source_type: str = Field(..., description="Тип: social, search, marketplace")

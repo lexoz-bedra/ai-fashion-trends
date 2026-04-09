@@ -21,11 +21,14 @@ class RawRecord:
 
 
 TREND_LIBRARY: dict[str, list[str]] = {
-    "glass_skin": ["glass skin", "dewy", "hydration"],
-    "clean_girl": ["clean girl", "minimal makeup", "natural finish"],
-    "berry_lips": ["berry lips", "plum lipstick", "wine tint"],
-    "graphic_liner": ["graphic liner", "cat eye", "bold eyeliner"],
-    "cherry_blush": ["cherry blush", "pink blush", "glossy cheeks"],
+    "glass_skin": ["glass skin", "dewy skin", "glowy base"],
+    "clean_girl_makeup": ["clean girl", "minimal makeup", "no makeup makeup"],
+    "euphoria_glitter_liner": ["euphoria makeup", "glitter liner", "rhinestone eyes"],
+    "fox_eye_siren_eye": ["fox eye", "siren eyes", "winged liner lift"],
+    "cherry_cola_lips": ["cherry cola lips", "dark liner lips", "90s lip combo"],
+    "latte_makeup": ["latte makeup", "warm neutrals", "soft brown eyes"],
+    "strawberry_girl_blush": ["strawberry girl", "fruit blush", "douyin blush"],
+    "graphic_editorial_liner": ["graphic liner", "floating liner", "negative space liner"],
 }
 
 SOURCES = [
@@ -43,7 +46,6 @@ def generate_mock_raw_dataset(
     weeks: int = 32,
     records_per_week: int = 50,
 ) -> Path:
-    """Generate synthetic fashion posts/news records."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     random.seed(seed)
     base = datetime.now(tz=timezone.utc) - timedelta(weeks=weeks)

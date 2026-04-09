@@ -1,218 +1,67 @@
 # ai-fashion-trends
 
-Прогнозирование модных трендов с помощью ИИ-агентов.
+Проект для анализа модных трендов из текста и изображений.
 
 Референсы:
-https://www.wgsn.com/en
+- https://www.wgsn.com/en
+- https://heuritech.com/company-about-us/
 
-https://heuritech.com/company-about-us/
+## Реализация
 
-## Интерфейс демо
-
-**Демонстрационный UI делаем на [Streamlit](https://streamlit.io/)**. 
-
-- Точка входа демо: файл **`streamlit_app.py`** в корне репозитория.
-- Логику загрузки данных и расчёты по возможности выносим в пакет **`ai_fashion_trends`** (`src/…`), а Streamlit только вызывает эти функции и рисует виджеты.
-
-## Структура репозитория
-
-```
-ai-fashion-trends/
-├── README.md
-├── pyproject.toml          # метаданные пакета, зависимости (в т.ч. streamlit)
-├── streamlit_app.py        # демо UI (Streamlit)
-├── data/                   # сырые и подготовленные данные (пока пусто)
-└── src/
-    └── ai_fashion_trends/  # код приложения (данные, модели — позже)
-        ├── __init__.py
-        └── __main__.py     # точка входа CLI
-```
-
-Пайплайны обработки данных в пакете пока не реализованы.
-
-## Установка
-
-Нужен **Python 3.10+**.
-
-Из корня репозитория:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -U pip
-pip install -e .
-```
-
-После установки доступны зависимости проекта, включая **Streamlit**.
+- Обработка текстовых данных: сбор, извлечение трендов через LLM и формирование словаря тегов.
+- Анализ изображений: классификация макияжа (smoky eyes / blue eyeshadow / other) с демо-страницей.
+- Прогноз временных рядов: недельные ряды трендов и прогноз (ETS/Holt-Winters с fallback на Theta и drift).
+- Демо в Streamlit: визуализация метрик и графиков по текстовым трендам + отдельная страница классификатора изображений.
 
 ## Запуск
 
-### Демо в браузере (Streamlit)
-
-Из корня репозитория, с активированным venv:
+Требуется Python 3.10+.
 
 ```bash
-streamlit run streamlit_app.py
+cd /Users/vorudnikova/Desktop/fashion/ai-fashion-trends
+uv sync
 ```
 
-**Важно:** сначала `pip install -e .`, чтобы импорт `ai_fashion_trends` из `streamlit_app.py` работал.
-
-### CLI
-
-Справка по подкомандам:
+### 1) Сгенерировать артефакты прогноза для демо
 
 ```bash
-python -m ai_fashion_trends --help
+uv run python -m ai_fashion_trends synthetic-forecast
 ```
 
-**Сбор и обработка (удалённая ветка):**
+### 2) Обучить классификатор макияжа (если есть папки с изображениями)
+
+Ожидаемые папки:
+- `data/makeup_dataset/smoky_eyes/`
+- `data/makeup_dataset/blue-eyeshadow/` (или `blue_eyeshadow`)
+- `data/makeup_dataset/other/`
+
+Быстрый вариант:
 
 ```bash
-./run.sh ingest
-./run.sh process
-# или: uv run ai-fashion-trends ingest
+uv run python -m ai_fashion_trends train-makeup-classifier --no-mediapipe
 ```
 
-**Прогноз по уже извлечённым трендам** (`data/processed/trends.jsonl` после `process`):
+Вариант с дообучением CNN (ResNet18):
 
 ```bash
-python -m ai_fashion_trends forecast
-# свой файл: python -m ai_fashion_trends forecast -i path/to/trends.jsonl
-# мало недель в ряду: python -m ai_fashion_trends forecast --holdout-weeks 2
+uv sync --extra torch
+uv run python -m ai_fashion_trends train-makeup-cnn --no-mediapipe
 ```
 
-Артефакты: `data/features/trend_timeseries/features_from_processed.csv`, `data/predictions/predictions_from_processed.csv`, `data/predictions/metrics_from_processed.csv`.
-
-### Пайплайн на мок-данных (без ingest)
+### 3) Запустить демо
 
 ```bash
-python -m ai_fashion_trends mock-pipeline
+uv run streamlit run streamlit_app.py
 ```
 
-Команда сгенерирует синтетический датасет и прогонит весь flow:
+## Полезные команды
 
-- `data/raw/news/mock_raw.csv`
-- `data/processed/news_cleaned/cleaned.csv`
-- `data/features/trend_timeseries/features.csv`
-- `data/predictions/predictions.csv`
-- `data/predictions/metrics.csv`
+```bash
+uv run python -m ai_fashion_trends --help
+```
 
-## Имплементация подхода из статьи
+Собрать словарь тегов из извлеченных трендов:
 
-Опираемся на статью **“Discovering fashion industry trends in the online news by applying text mining and time series regression analysis”** (Heliyon, 2023).
-
-Идея: тренды выявляются не только по соцсетям, но и по потоку новостей. Сначала выделяем и нормализуем модные сущности из текстов, затем строим временные ряды и делаем прогноз через регрессию по времени.
-
-### Шаг 1. Сбор новостного корпуса
-
-- Собрать источники (fashion media, industry news, блоги брендов, агрегаторы).
-- Для каждой публикации сохранить минимум: `source`, `published_at`, `title`, `text`, `url`, `language`.
-- Сохранить сырые данные в `data/raw/news/` в формате parquet/jsonl.
-
-Результат этапа: единый, воспроизводимый новостной датасет по датам.
-
-### Шаг 2. Очистка и нормализация текста
-
-- Удалить дубликаты по `url` и почти-дубликаты по схожести `title+text`.
-- Почистить html/служебный шум, нормализовать регистр, пунктуацию, токены.
-- Привести даты к UTC и единой гранулярности (день/неделя).
-- Для мультиязычности: либо фильтр по языку, либо перевод в один рабочий язык.
-
-Результат этапа: `data/processed/news_cleaned/`.
-
-### Шаг 3. Извлечение fashion-сигналов (text mining)
-
-- Сформировать словарь/таксономию признаков тренда: категории, цвета, ткани, фасоны, стили, beauty-атрибуты.
-- Сделать извлечение сущностей и ключевых фраз (NER + keyword extraction).
-- Нормализовать синонимы и варианты написаний в канонические теги.
-- Посчитать частоты по времени: сколько раз тег/тема встречается в периоде.
-
-Результат этапа: таблица сигналов `trend_tag x date x count`.
-
-### Шаг 4. Построение временных рядов
-
-- Для каждого тега собрать временной ряд (лучше недельный шаг для устойчивости).
-- Сгладить шум (rolling mean) и обработать выбросы.
-- Отфильтровать слабые ряды (слишком редкие/короткие).
-
-Результат этапа: витрина `data/features/trend_timeseries/`.
-
-### Шаг 5. Прогноз (time series regression)
-
-- Базовая модель: регрессия по времени на каждом тренде (`count ~ time + seasonality`).
-- Проверить лаги/сезонность (месяц, квартал, event spikes).
-- Разделить train/validation по времени (без перемешивания).
-- Для демо сохранить прогноз на горизонты `+4`, `+8`, `+12` недель.
-
-Результат этапа: `data/predictions/` с `trend_tag`, `date`, `y_true`, `y_pred`, `confidence`.
-
-### Шаг 6. Оценка качества
-
-- Метрики: MAE/MAPE/RMSE по каждому тренду и в среднем.
-- Backtesting по rolling окнами (несколько исторических срезов).
-- Отдельно отмечать тренды, где модель нестабильна (мало данных/высокий шум).
-
-Результат этапа: отчёт качества и список «надёжных» трендов.
-
-### Шаг 7. Интеграция в Streamlit-демо
-
-- Экран 1: список трендов с текущим статусом (`rising / stable / declining`).
-- Экран 2: карточка тренда: исторический ряд + прогноз + доверительный интервал.
-- Экран 3: фильтры (источник, период, категория, язык).
-- Показать provenance: по клику выводить топ-статей, сформировавших сигнал.
-
-Минимальный демо-результат: пользователь выбирает тренд и видит динамику + прогноз на будущее.
-
-### Что делать в этом репозитории прямо сейчас
-
-1. Создать заготовки модулей в `src/ai_fashion_trends/`:
-   - `data_ingestion.py`
-   - `text_mining.py`
-   - `features.py`
-   - `forecasting.py`
-   - `evaluation.py`
-2. Зафиксировать формат файлов (schema) для `raw`, `processed`, `features`, `predictions`.
-3. Подключить `streamlit_app.py` к чтению `data/predictions/` и отображению графика одного тренда.
-4. Добавить минимальный sample dataset (5-10 трендов, 3-6 месяцев недельных значений) для демонстрации UI без полного пайплайна.
-
-## To-do
-
-### Данные
-
-- [ ] **Источники и сбор корпуса**
-  - зафиксировать 3-5 типов источников: Pinterest/Instagram (хз насчёт него, может не стоит запрещёнку использовать)/TikTok (тоже хз, с видео будт сильно сложнее), fashion media (Vogue, WWD, BOF и т.п.), поисковые тренды;
-  - для каждого источника описать: как собираем, ограничения, период покрытия, частоту обновления.
-- [ ] **Определить "единицу наблюдения" и обязательные поля**
-  - единица: один пост/публикация/новость;
-  - минимальные поля: `source`, `source_type` (social/news), `published_at`, `url/id`, `title/caption`, `text`, `language`, `engagement` (если есть: likes/comments/views), `media_meta` (если есть), `tags_raw`.
-- [ ] **Пилотный объём данных (первый проход)**
-  - старт: `500-1500` единиц за `6-12` месяцев;
-  - целевой баланс: минимум 2-3 источника и разные категории трендов;
-  - после пилота решить, расширяем ли до `5k+`.
-- [ ] **Извлечение сигналов (что именно тянем из текста/метаданных)**
-  - тренд-теги: категории, цвета, стили, материалы, beauty-атрибуты;
-  - частоты упоминаний по времени (`trend_tag x week x count`);
-  - дополнительные признаки: источник, engagement, язык, сезон/месяц.
-- [ ] **Очистка данных (что сюда входит)**
-  - дедупликация по `url/id` и near-duplicate по похожему `title+text`;
-  - очистка html/эмодзи/служебного шума, нормализация регистра и токенов;
-  - нормализация дат (UTC), заполнение/маркировка пропусков;
-  - унификация тегов и синонимов в канонические `trend_tag`.
-- [ ] **Формат хранения**
-  - сырые: `data/raw/<source>/YYYY-MM/*.jsonl` (или parquet, если сразу батчами);
-  - очищенные: `data/processed/news_cleaned/*.parquet`;
-  - фичи рядов: `data/features/trend_timeseries/*.parquet`;
-  - прогнозы: `data/predictions/*.parquet`.
-- [ ] **Модель: декомпозиция на понятные шаги**
-  - `M0 baseline`: naive/rolling mean (проверка пайплайна и метрик);
-  - `M1 regression`: для каждого `trend_tag` модель `count ~ time + seasonality + source_features`;
-  - временной split (train/val/test без shuffle), backtesting по rolling window;
-  - метрики: MAE/MAPE/RMSE; сохранять предсказания и доверие (`confidence`) в `data/predictions/`;
-  - сравнить M1 с baseline и выбрать модель для демо.
-
-### Демо (Streamlit)
-
-- [ ] Список трендов с фильтрами
-- [ ] Карточка тренда: исторический ряд + прогноз
-- [ ] Показ ссылок на первоисточники (news provenance)
-- [ ] Пояснение ограничений модели прямо в интерфейсе
+```bash
+uv run python -m ai_fashion_trends build-tag-dictionary
+```

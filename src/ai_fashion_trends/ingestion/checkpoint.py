@@ -12,7 +12,6 @@ _MAX_IDS = 5000
 
 
 class CheckpointManager:
-    """Управление чекпоинтами для отдельного источника."""
 
     def __init__(self, source: str, checkpoint_dir: Path | None = None) -> None:
         self._source = source
@@ -23,7 +22,6 @@ class CheckpointManager:
 
     @property
     def cursor(self) -> str | None:
-        """Курсор пагинации (опционально)."""
         return self._state.get("cursor")
 
     @property
@@ -48,7 +46,6 @@ class CheckpointManager:
         cursor: str | None = None,
         extra: dict[str, Any] | None = None,
     ) -> None:
-        """Обновить чекпоинт после обработки батча и сразу записать на диск."""
         self._state["last_run_at"] = datetime.utcnow().isoformat()
 
         if cursor is not None:
@@ -65,7 +62,6 @@ class CheckpointManager:
         self._save()
 
     def reset(self) -> None:
-        """Полный сброс чекпоинта."""
         self._state = {"source": self._source}
         self._save()
 
@@ -84,4 +80,4 @@ class CheckpointManager:
         tmp = self._path.with_suffix(".tmp")
         with tmp.open("w", encoding="utf-8") as f:
             json.dump(self._state, f, ensure_ascii=False, indent=2)
-        tmp.replace(self._path)  # атомарная замена
+        tmp.replace(self._path)

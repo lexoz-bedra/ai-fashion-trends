@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 def build_weekly_features(cleaned_path: Path, features_path: Path) -> Path:
-    """Aggregate cleaned records into weekly trend counts and engagement."""
     features_path.parent.mkdir(parents=True, exist_ok=True)
     counts: dict[tuple[str, str], int] = defaultdict(int)
     engagement_sum: dict[tuple[str, str], int] = defaultdict(int)
@@ -74,7 +73,6 @@ def _trend_key_from_record(rec: dict) -> str | None:
 
 
 def build_weekly_features_from_trends_jsonl(jsonl_path: Path, features_path: Path) -> Path:
-    """Агрегация по неделям из выхода `process` (ExtractedTrend в JSONL)."""
     features_path.parent.mkdir(parents=True, exist_ok=True)
     counts: dict[tuple[str, str], int] = defaultdict(int)
     conf_sum: dict[tuple[str, str], float] = defaultdict(float)

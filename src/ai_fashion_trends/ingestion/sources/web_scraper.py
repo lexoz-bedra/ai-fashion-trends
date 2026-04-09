@@ -1,13 +1,3 @@
-"""Источник: веб-скрапер для форумов и сайтов.
-
-Универсальный скрапер: принимает список конфигов сайтов с CSS-селекторами
-для извлечения контента. Поддерживает:
-- форумы (темы/посты)
-- блоги / журналы (статьи)
-- любые страницы с повторяющейся структурой
-
-Каждый сайт описывается через SiteScrapeConfig.
-"""
 
 from __future__ import annotations
 
@@ -29,29 +19,24 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SiteScrapeConfig:
-    """Конфиг для одного сайта/форума.
 
-    CSS-селекторы указывают, где на странице находятся нужные элементы.
-    """
-
-    name: str                           # человекочитаемое имя: "fashionista_forum"
-    start_urls: list[str]               # начальные URL (список страниц / разделов)
-    item_selector: str                  # CSS-селектор одного поста / статьи на странице
-    title_selector: str = ""            # заголовок внутри item
-    text_selector: str = ""             # текст / контент внутри item
-    date_selector: str = ""             # дата публикации
-    date_attr: str = ""                 # атрибут с датой (datetime, content и т.д.), если пусто — берём text
-    link_selector: str = ""             # ссылка на полный пост (href)
-    tags_selector: str = ""             # теги / категории
-    next_page_selector: str = ""        # кнопка / ссылка «следующая страница»
-    max_pages: int = 10                 # лимит пагинации
-    request_delay: float = 1.0          # задержка между запросами (сек)
-    source_type: str = "forum"          # forum, website, blog
+    name: str
+    start_urls: list[str]
+    item_selector: str
+    title_selector: str = ""
+    text_selector: str = ""
+    date_selector: str = ""
+    date_attr: str = ""
+    link_selector: str = ""
+    tags_selector: str = ""
+    next_page_selector: str = ""
+    max_pages: int = 10
+    request_delay: float = 1.0
+    source_type: str = "forum"
     extra_headers: dict[str, str] = field(default_factory=dict)
 
 
 class WebScraperSource(BaseSource):
-    """Скрапинг форумов / сайтов по конфигам."""
 
     def __init__(
         self,

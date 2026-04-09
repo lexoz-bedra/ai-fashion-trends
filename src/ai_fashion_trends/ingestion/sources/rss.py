@@ -1,11 +1,3 @@
-"""Источник: RSS-ленты.
-
-Принимает список URL RSS/Atom фидов, парсит через feedparser,
-нормализует каждую запись в PostRecord.
-
-Чекпоинт — по id записи (link или guid). При рестарте пропускает уже
-обработанные записи.
-"""
 
 from __future__ import annotations
 
@@ -47,7 +39,7 @@ class RssSource(BaseSource):
         return "feed"
 
     def fetch_batch(self) -> Iterator[list[PostRecord]]:
-        import feedparser 
+        import feedparser
 
         processed = self.checkpoint.processed_ids
 
@@ -76,7 +68,7 @@ class RssSource(BaseSource):
                     )
                     batch = []
 
-            # остаток
+
             if batch:
                 yield batch
                 self.checkpoint.update(
@@ -86,7 +78,6 @@ class RssSource(BaseSource):
 
 
 def _entry_id(entry: Any, feed_url: str) -> str:
-    """Стабильный ID записи: guid > link > hash(title+feed)."""
     if getattr(entry, "id", None):
         return entry.id
     if getattr(entry, "link", None):

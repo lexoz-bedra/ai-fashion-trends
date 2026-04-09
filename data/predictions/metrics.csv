@@ -1,6 +1,9 @@
 trend_tag,mae_baseline,rmse_baseline,mape_baseline,mae_regression,rmse_regression,mape_regression
-berry_lips,5.0833,5.7427,40.1153,3.7128,4.4558,28.4849
-cherry_blush,2.0,2.63,36.026,3.0107,3.8604,53.4584
-clean_girl,1.6667,2.9439,64.5833,3.4571,4.2813,98.7744
-glass_skin,2.3333,3.0,39.2136,2.8188,3.0197,35.8623
-graphic_liner,2.5,3.4611,42.7151,2.5129,3.6718,45.0005
+cherry_cola_lips,1.0,1.2162,26.6667,0.8849,1.0673,23.1561
+clean_girl_makeup,2.0,2.3629,39.881,1.6728,2.1,31.9773
+euphoria_glitter_liner,3.1667,3.4521,132.8598,3.3985,3.7339,150.19
+fox_eye_siren_eye,2.25,2.6732,115.8482,2.1063,2.4701,105.4874
+glass_skin,2.5,2.8723,110.3009,2.2502,2.8616,115.7058
+graphic_editorial_liner,2.0,2.3936,58.7169,2.0285,2.4838,62.787
+latte_makeup,1.3333,1.5,33.0159,1.7999,2.1025,46.9769
+strawberry_girl_blush,2.5,3.2404,74.9158,2.678,3.1768,73.391

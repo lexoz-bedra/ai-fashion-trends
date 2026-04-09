@@ -22,7 +22,6 @@ def _canonical_tag(tag_candidate: str) -> str | None:
 
 
 def clean_and_extract_tags(raw_path: Path, cleaned_path: Path) -> Path:
-    """Deduplicate and map raw tags/text into canonical trend tags."""
     cleaned_path.parent.mkdir(parents=True, exist_ok=True)
     seen_ids: set[str] = set()
 
@@ -60,7 +59,7 @@ def clean_and_extract_tags(raw_path: Path, cleaned_path: Path) -> Path:
             inferred = [x for x in inferred if x is not None]
 
             if not inferred:
-                # Fallback: infer by dictionary mentions in cleaned text.
+
                 for canonical, variants in TREND_LIBRARY.items():
                     if any(_normalize_text(v) in text_clean for v in variants):
                         inferred.append(canonical)

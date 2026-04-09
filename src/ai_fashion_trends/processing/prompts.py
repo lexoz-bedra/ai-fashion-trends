@@ -1,4 +1,3 @@
-"""Промпт-шаблоны для извлечения трендов из текстов."""
 
 TREND_EXTRACTION_PROMPT = """\
 Extract fashion trends from the text below. Return ONLY a JSON array.
@@ -25,7 +24,6 @@ Text:
 
 
 def build_prompt(title: str, text: str) -> str:
-    """Сформировать промпт для извлечения трендов из одного поста."""
     truncated_text = text[:1500] if text else ""
     truncated_title = title[:200] if title else ""
     return TREND_EXTRACTION_PROMPT.format(title=truncated_title, text=truncated_text)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from ai_fashion_trends.data_ingestion import generate_mock_raw_dataset
 from ai_fashion_trends.evaluation import evaluate_predictions
@@ -13,7 +14,6 @@ from ai_fashion_trends.text_mining import clean_and_extract_tags
 
 
 def run_mock_pipeline(base_dir: Path) -> dict[str, Path]:
-    """Run full synthetic data pipeline and return produced artifact paths."""
     raw_path = base_dir / "data" / "raw" / "news" / "mock_raw.csv"
     cleaned_path = base_dir / "data" / "processed" / "news_cleaned" / "cleaned.csv"
     features_path = base_dir / "data" / "features" / "trend_timeseries" / "features.csv"
@@ -40,9 +40,6 @@ def run_forecast_from_trends_jsonl(
     trends_jsonl: Path | None = None,
     holdout_weeks: int = 6,
 ) -> dict[str, Path]:
-    """
-    Цепочка после ingest + process: недельные ряды из trends.jsonl → прогноз → метрики.
-    """
     trends_path = trends_jsonl or (base_dir / "data" / "processed" / "trends.jsonl")
     if not trends_path.exists():
         raise FileNotFoundError(
@@ -65,3 +62,48 @@ def run_forecast_from_trends_jsonl(
         "predictions": predictions_path,
         "metrics": metrics_path,
     }
+
+
+def run_synthetic_long_forecast_eval(
+    base_dir: Path,
+    *,
+    history_weeks: int = 104,
+    future_weeks: int = 26,
+    seed: int = 42,
+) -> dict[str, Path]:
+    from ai_fashion_trends.forecasting_advanced import run_ets_evaluation
+    from ai_fashion_trends.synthetic_series import write_weekly_eval_bundle_from_daily
+
+    bundle = write_weekly_eval_bundle_from_daily(
+        base_dir,
+        history_weeks=history_weeks,
+        future_weeks=future_weeks,
+        seed=seed,
+    )
+    out_dir = bundle["dir"]
+    pred_path = out_dir / "predictions_ets.csv"
+    met_path = out_dir / "metrics_ets.csv"
+    run_ets_evaluation(
+        bundle["history_features"],
+        bundle["future_truth"],
+        pred_path,
+        met_path,
+    )
+    return {
+        "history_features": bundle["history_features"],
+        "future_truth": bundle["future_truth"],
+        "predictions_ets": pred_path,
+        "metrics_ets": met_path,
+    }
+
+
+def run_synthetic_daily_export(
+    base_dir: Path,
+    *,
+    days: int = 730,
+    seed: int = 42,
+) -> dict[str, Any]:
+    from ai_fashion_trends.synthetic_series import write_daily_two_year_csv
+
+    path, n = write_daily_two_year_csv(base_dir, days=days, seed=seed)
+    return {"daily_trends": path, "rows": n}

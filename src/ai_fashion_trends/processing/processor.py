@@ -1,14 +1,3 @@
-"""Процессор: читает сырые данные, пропускает через LLM, сохраняет тренды.
-
-Полный цикл:
-    1. Загрузить чекпоинт (какие id_or_url уже обработаны)
-    2. Прочитать data/raw/*/*.jsonl
-    3. Отфильтровать уже обработанные
-    4. Батчами отправить в LLM
-    5. Распарсить ответ → ExtractedTrend
-    6. Сохранить в data/processed/trends.jsonl
-    7. Обновить чекпоинт
-"""
 
 from __future__ import annotations
 
@@ -30,7 +19,6 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TrendProcessor:
-    """Обрабатывает сырые посты через LLM, извлекает тренды."""
 
     def __init__(
         self,
@@ -51,7 +39,6 @@ class TrendProcessor:
         self._output_path = self.output_dir / "trends.jsonl"
 
     def run(self) -> int:
-        """Основной цикл. Возвращает число извлечённых трендов."""
         posts = self._load_unprocessed_posts()
         if not posts:
             logger.info("Нет новых постов для обработки")
@@ -82,12 +69,12 @@ class TrendProcessor:
                 batch_trends.extend(trends)
                 processed_ids.append(post_id)
 
-            # Сохраняем результаты батча
+
             if batch_trends:
                 self._save_trends(batch_trends)
                 total_trends += len(batch_trends)
 
-            # Обновляем чекпоинт ПОСЛЕ сохранения
+
             self.checkpoint.update(new_ids=processed_ids)
             logger.info(
                 "Batch %d–%d: извлечено %d трендов (total: %d)",
@@ -97,12 +84,8 @@ class TrendProcessor:
         logger.info("Обработка завершена: %d трендов из %d постов", total_trends, len(posts))
         return total_trends
 
-    # ------------------------------------------------------------------
-    # internal
-    # ------------------------------------------------------------------
 
     def _load_unprocessed_posts(self) -> list[dict[str, Any]]:
-        """Загрузить все сырые посты, которых ещё нет в чекпоинте."""
         processed_ids = self.checkpoint.processed_ids
         posts: list[dict[str, Any]] = []
 
@@ -121,7 +104,6 @@ class TrendProcessor:
         return posts
 
     def _process_single(self, post: dict[str, Any]) -> list[ExtractedTrend]:
-        """Отправить один пост в LLM, распарсить ответ."""
         title = post.get("title_or_caption") or ""
         text = post.get("text") or ""
         prompt = build_prompt(title, text)
@@ -137,8 +119,7 @@ class TrendProcessor:
     def _parse_response(
         self, raw: str, post: dict[str, Any]
     ) -> list[ExtractedTrend]:
-        """Извлечь JSON-массив трендов из ответа модели."""
-        # убираем reasoning в <think>...</think> (ну на всякий, пусть мы и через гемму делали)
+
         cleaned = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
         cleaned = re.sub(r"```json\s*", "", cleaned)
         cleaned = re.sub(r"```\s*", "", cleaned)
@@ -203,7 +184,6 @@ class TrendProcessor:
         return trends
 
     def _save_trends(self, trends: list[ExtractedTrend]) -> None:
-        """Дописать тренды в JSONL-файл."""
         with self._output_path.open("a", encoding="utf-8") as f:
             for t in trends:
                 f.write(t.model_dump_json() + "\n")

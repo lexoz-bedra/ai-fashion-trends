@@ -1,8 +1,3 @@
-"""Абстрактный базовый класс для всех источников данных.
-
-Каждый источник (Google Trends, RSS, веб-скрапер и т.д.) наследует BaseSource
-и реализует методы fetch_batch() и source_name/source_type.
-"""
 
 from __future__ import annotations
 
@@ -18,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseSource(ABC):
-    """Интерфейс источника данных."""
 
     def __init__(
         self,
@@ -33,23 +27,18 @@ class BaseSource(ABC):
     @property
     @abstractmethod
     def source_name(self) -> str:
-        """Уникальное имя источника: google_trends, rss, forum и т.д."""
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def source_type(self) -> str:
-        """Тип источника: search, feed, forum, website."""
+        raise NotImplementedError
 
     @abstractmethod
     def fetch_batch(self) -> Iterator[list[PostRecord]]:
-        """Генератор батчей записей.
-
-        Каждый yield — список PostRecord размером <= batch_size.
-        Реализация должна учитывать checkpoint для возобновления.
-        """
+        raise NotImplementedError
 
     def run(self) -> int:
-        """Запустить полный цикл: fetch → save → checkpoint. Возвращает кол-во новых записей."""
         total = 0
         for batch in self.fetch_batch():
             if not batch:

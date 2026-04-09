@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class IngestionPipeline:
-    """Запуск источников с общим storage и per-source чекпоинтами."""
 
     def __init__(
         self,
@@ -30,7 +29,6 @@ class IngestionPipeline:
         return CheckpointManager(source_name, checkpoint_dir=self._checkpoint_dir)
 
     def run(self) -> dict[str, int]:
-        """Запустить все источники. Возвращает {source_name: new_records_count}."""
         results: dict[str, int] = {}
         for source in self._sources:
             name = source.source_name

@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 
 class ExtractedTrend(BaseModel):
-    """Один модный тренд / сущность, извлечённая из текста."""
 
     source_record_id: str = Field(..., description="id_or_url исходного PostRecord")
     source: str = Field(..., description="Источник: rss, web_reddit_fashion, google_trends")
